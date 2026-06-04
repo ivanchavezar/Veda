@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  Entitlements para el target principal Veda.
+  IMPORTANTE:
+  - Reemplaza "group.com.tuappleid.veda" con tu App Group ID real.
+  - El entitlement com.apple.developer.family-controls debe estar
+    activado en el perfil de desarrollo en el portal de Apple,
+    o habilitado en Xcode > Signing & Capabilities > Family Controls.
+-->
+<plist version="1.0">
+<dict>
+    <!-- Family Controls: obligatorio para FamilyControls + ManagedSettings + DeviceActivity -->
+    <key>com.apple.developer.family-controls</key>
+    <true/>
+
+    <!-- App Group: compartir UserDefaults con la extensión -->
+    <key>com.apple.security.application-groups</key>
+    <array>
+        <string>group.com.tuappleid.veda</string>
+    </array>
+</dict>
+</plist>
