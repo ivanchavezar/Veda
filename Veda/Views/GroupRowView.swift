@@ -21,6 +21,11 @@ struct GroupRowView: View {
                     Text(group.name.isEmpty ? "Sin nombre" : group.name)
                         .font(.headline)
 
+                    if group.suppressNotifications {
+                        Image(systemName: "bell.slash.fill")
+                            .font(.caption)
+                            .foregroundStyle(.purple)
+                    }
                     if group.strictMode {
                         Image(systemName: "lock.fill")
                             .font(.caption)

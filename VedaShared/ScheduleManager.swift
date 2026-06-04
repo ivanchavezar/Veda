@@ -20,20 +20,63 @@ public final class ScheduleManager {
 
     // MARK: - Aplicar / quitar shield
 
-    /// Aplica el shield a las apps del grupo (bloqueado).
+    /// Aplica el shield y, opcionalmente, suprime las notificaciones del grupo (bloqueado).
     public static func applyShield(for group: BlockGroup) {
         guard let selection = group.activitySelection else { return }
         let store = Self.store(for: group.id)
-        store.shield.applications = selection.applicationTokens.isEmpty ? nil : selection.applicationTokens
-        store.shield.applicationCategories = selection.categoryTokens.isEmpty ? nil
-            : ShieldSettings.ActivityCategoryPolicy.specific(selection.categoryTokens)
+
+        // Shield visual: muestra la pantalla de "app no disponible"
+        store.shield.applications = selection.applicationTokens.isEmpty
+            ? nil : selection.applicationTokens
+        store.shield.applicationCategories = selection.categoryTokens.isEmpty
+            ? nil : ShieldSettings.ActivityCategoryPolicy.specific(selection.categoryTokens)
+
+        // Supresión de notificaciones durante el bloqueo
+        if group.suppressNotifications {
+            applyNotificationSuppression(store: store, selection: selection)
+        }
     }
 
-    /// Limpia el shield del grupo (disponible).
+    /// Limpia el shield y restaura las notificaciones del grupo (disponible).
     public static func clearShield(for group: BlockGroup) {
         let store = Self.store(for: group.id)
         store.shield.applications = nil
         store.shield.applicationCategories = nil
+        // Restaurar notificaciones al salir del período de bloqueo
+        store.notifications.badgingEnabled = nil
+        if #available(iOS 16.0, *) {
+            store.notifications.notificationsEnabled = nil
+        }
+    }
+
+    // MARK: - Supresión de notificaciones
+
+    /// Aplica restricciones de notificación usando ManagedSettings.
+    ///
+    /// ManagedSettings provee dos niveles de control sobre notificaciones:
+    ///
+    /// 1. `notificationsEnabled = false` (iOS 16+):
+    ///    Desactiva completamente las notificaciones (banners, sonidos, badges)
+    ///    para las apps cubiertos por el store. Es el método más efectivo.
+    ///
+    /// 2. `badgingEnabled = false`:
+    ///    Oculta el badge numérico del icono. Funciona en todos los iOS soportados.
+    ///
+    /// NOTA: `notificationsEnabled` aplica a nivel del ManagedSettingsStore completo,
+    /// no solo a las apps del set. Si necesitas granularidad por app, la alternativa
+    /// es crear un store distinto por app. Esta implementación usa un store por
+    /// BlockGroup, lo que ya da el alcance correcto.
+    private static func applyNotificationSuppression(
+        store: ManagedSettingsStore,
+        selection: FamilyActivitySelection
+    ) {
+        // Ocultar badges en todos los casos
+        store.notifications.badgingEnabled = false
+
+        // iOS 16+: desactivar notificaciones completamente (banners + sonidos)
+        if #available(iOS 16.0, *) {
+            store.notifications.notificationsEnabled = false
+        }
     }
 
     // MARK: - Registrar schedules

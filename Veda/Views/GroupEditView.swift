@@ -18,6 +18,7 @@ struct GroupEditView: View {
     @State private var availableEnd:   Date = Calendar.current.date(bySettingHour: 23, minute: 0, second: 0, of: Date())!
     @State private var weekdays: WeekdaySet = .every
     @State private var strictMode: Bool = false
+    @State private var suppressNotifications: Bool = true
     @State private var isEnabled: Bool = true
     @State private var showingAppPicker = false
     @State private var validationError: String? = nil
@@ -96,6 +97,15 @@ struct GroupEditView: View {
                 Section("Opciones") {
                     Toggle("Habilitado", isOn: $isEnabled)
 
+                    Toggle(isOn: $suppressNotifications) {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Label("Suprimir notificaciones", systemImage: "bell.slash.fill")
+                            Text("Oculta banners, sonidos y badges durante el bloqueo.")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+
                     Toggle(isOn: $strictMode) {
                         VStack(alignment: .leading, spacing: 2) {
                             Label("Modo estricto", systemImage: "lock.shield")
@@ -148,11 +158,12 @@ struct GroupEditView: View {
         guard let g = group else { return }
         name = g.name
         if let sel = g.activitySelection { activitySelection = sel }
-        availableStart = secondsToDate(g.availableStart)
-        availableEnd   = secondsToDate(g.availableEnd)
-        weekdays       = g.weekdays
-        strictMode     = g.strictMode
-        isEnabled      = g.isEnabled
+        availableStart        = secondsToDate(g.availableStart)
+        availableEnd          = secondsToDate(g.availableEnd)
+        weekdays              = g.weekdays
+        strictMode            = g.strictMode
+        suppressNotifications = g.suppressNotifications
+        isEnabled             = g.isEnabled
     }
 
     private func save() {
@@ -176,13 +187,14 @@ struct GroupEditView: View {
         let selectionData = try? JSONEncoder().encode(activitySelection)
 
         var updated = group ?? BlockGroup()
-        updated.name                 = name.trimmingCharacters(in: .whitespaces)
+        updated.name                  = name.trimmingCharacters(in: .whitespaces)
         updated.activitySelectionData = selectionData
-        updated.availableStart       = startSec
-        updated.availableEnd         = endSec
-        updated.weekdays             = weekdays
-        updated.strictMode           = strictMode
-        updated.isEnabled            = isEnabled
+        updated.availableStart        = startSec
+        updated.availableEnd          = endSec
+        updated.weekdays              = weekdays
+        updated.strictMode            = strictMode
+        updated.suppressNotifications = suppressNotifications
+        updated.isEnabled             = isEnabled
 
         if isEditing {
             groupsVM.update(updated)

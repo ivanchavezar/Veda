@@ -42,6 +42,9 @@ public struct BlockGroup: Identifiable, Codable, Equatable {
     /// Modo estricto: impide editar o desactivar durante el bloqueo.
     public var strictMode: Bool
 
+    /// Suprimir notificaciones (banners, badges y sonidos) durante el bloqueo.
+    public var suppressNotifications: Bool
+
     /// Si el grupo está habilitado.
     public var isEnabled: Bool
 
@@ -53,6 +56,7 @@ public struct BlockGroup: Identifiable, Codable, Equatable {
         availableEnd: Int = 23 * 3600,
         weekdays: WeekdaySet = .every,
         strictMode: Bool = false,
+        suppressNotifications: Bool = true,
         isEnabled: Bool = true
     ) {
         self.id = id
@@ -62,6 +66,7 @@ public struct BlockGroup: Identifiable, Codable, Equatable {
         self.availableEnd = availableEnd
         self.weekdays = weekdays
         self.strictMode = strictMode
+        self.suppressNotifications = suppressNotifications
         self.isEnabled = isEnabled
     }
 
